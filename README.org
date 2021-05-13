@@ -1,0 +1,18 @@
+#+title: Ksuid
+#+author: Boosting.tech
+#+email: mdsp@booting.tech
+
+** Installation
+   :PROPERTIES:
+   :CUSTOM_ID: installation
+   :END:
+Official docs can be found at [[https://hexdocs.pm/ksuid][hex]],
+the package can be installed by adding =ksuid= to your list of dependencies in =mix.exs=:
+
+#+begin_src elixir
+  def deps do
+    [
+      {:ksuid, "~> 0.1.0"}
+    ]
+  end
+#+end_src

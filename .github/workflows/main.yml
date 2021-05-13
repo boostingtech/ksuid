@@ -1,0 +1,83 @@
+name: test
+
+on: pull_request
+
+env:
+  MIX_ENV: test
+
+jobs:
+  deps:
+    name: Dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp: [23.3.1]
+        elixir: [1.11.4]
+    steps:
+      - name: Cancels previous run
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+
+      - name: Retrieve cached deps
+        uses: actions/cache@v2
+        id: project-cache
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+
+      - name: Install project deps
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix do deps.get, deps.compile
+
+  unit_tests:
+    name: Unit tests
+    needs: deps
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp: [23.3.1]
+        elixir: [1.11.4]
+    steps:
+      - name: Cancels previous run
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+
+      - name: Retrieve cached deps
+        uses: actions/cache@v2
+        id: project-cache
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+
+      - name: Run tests
+        run: mix test
